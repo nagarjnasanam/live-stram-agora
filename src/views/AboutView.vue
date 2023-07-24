@@ -1,6 +1,10 @@
 <template>
   <div class="about">
-    <div>
+    <input placeholder="enter username" v-model="uid" />
+    <button @click="initRtmInstance()">Sign In</button>
+    
+
+    <div v-if="isLoggedIn">
       <input
         @click="Host()"
         type="radio"
@@ -20,16 +24,26 @@
       <button @click="Join()" type="button" id="join">Join</button>
       <button @click="Leave()" type="button" id="leave">Leave</button>
     </div>
+    <div v-if="joined">
+      <button @click="sendChannelMessage()">sendChannelMessage</button>
+      <ul class="list-group">
+        <li class="list-group-item" v-for="msg in messages" :key="msg">{{ msg.memberId }} : {{ msg.message.text }}</li>
+      
+      </ul>
+    </div>
   </div>
 </template>
 <script>
 import AgoraRTC from "agora-rtc-sdk-ng";
+import AgoraRTM from "agora-rtm-sdk";
+import axios from "axios";
 const agoraEngine = AgoraRTC.createClient({ mode: "live", codec: "vp9" });
 
 export default {
   data() {
     return {
       audience: "audience",
+      joined: false,
       remotePlayerContainer: null,
       localPlayerContainer: null,
       options: {
@@ -57,6 +71,14 @@ export default {
         // A variable to hold the remote user id.s
         remoteUid: null,
       },
+      rtmChannelInstance: null,
+      rtcClient: null,
+      updatedOnlineStatus: {},
+      rtmChannelName: null,
+      onlineUsers: [],
+      isLoggedIn: false,
+      uid: null,
+      messages: [],
     };
   },
   async mounted() {
@@ -72,7 +94,7 @@ export default {
     },
     startBasicCall() {
       // Dynamically create a container in the form of a DIV element to play the remote video track.
-      
+
       this.remotePlayerContainer = document.createElement("div");
       // Dynamically create a container in the form of a DIV element to play the local video track.
       this.localPlayerContainer = document.createElement("div");
@@ -113,7 +135,9 @@ export default {
           document.body.append(this.remotePlayerContainer);
           if (this.options.role != "host") {
             // Play the remote video track.
-            this.channelParameters.remoteVideoTrack.play(this.remotePlayerContainer);
+            this.channelParameters.remoteVideoTrack.play(
+              this.remotePlayerContainer
+            );
           }
         }
         // Subscribe and play the remote audio track If the remote user publishes the audio track only.
@@ -130,6 +154,10 @@ export default {
       });
     },
     async Join() {
+      const { data } = await this.generateToken(
+        this.options.channel,
+        this.uid
+      );
       if (this.options.role == "") {
         window.alert("Select a user role first!");
         return;
@@ -138,8 +166,8 @@ export default {
       await agoraEngine.join(
         this.options.appId,
         this.options.channel,
-        this.options.token,
-        this.options.uid
+        data.token,
+        this.uid
       );
       // Create a local audio track from the audio sampled by a microphone.
       this.channelParameters.localAudioTrack =
@@ -161,6 +189,7 @@ export default {
         this.channelParameters.localVideoTrack.play(this.localPlayerContainer);
         console.log("publish success!");
       }
+      this.joined = true;
     },
     async Leave() {
       // Destroy the local audio and video tracks.
@@ -212,6 +241,146 @@ export default {
         // Start playing the local video.
         this.channelParameters.localVideoTrack.play(this.localPlayerContainer);
       }
+    },
+    async initRtmInstance() {
+      // initialize an Agora RTM instance
+      this.rtmClient = AgoraRTM.createInstance(
+        "6fa37398a5be49d187db7c4f060d8530"
+      );
+
+      // RTM Channel to be used
+      this.rtmChannelName = this.options.channel;
+
+      // Generate the RTM token
+      const { data } = await this.generateToken(this.rtmChannelName, this.uid);
+      console.log(data);
+
+      // Login when it mounts
+      await this.rtmClient
+        .login({
+          uid: this.uid,
+          token: data.rtm_token,
+        })
+        .then(() => {
+          console.log("RTM client logged in success ");
+        });
+
+      this.isLoggedIn = true;
+
+      // RTM Message Listeners
+      this.rtmClient.on("MessageFromPeer", (message, peerId) => {
+        console.log("MessageFromPeer");
+        console.log("message: ", message);
+        console.log("peerId: ", peerId);
+      });
+
+      // Display connection state changes
+      this.rtmClient.on("ConnectionStateChanged", (state, reason) => {
+        console.log("ConnectionStateChanged");
+        console.log("state: ", state);
+        console.log("reason: ", reason);
+      });
+      // Emitted when a Call Invitation is sent from Remote User
+      // this.rtmClient.on("RemoteInvitationReceived", (data) => {
+      //   this.remoteInvitation = data;
+      //   this.incomingCall = true;
+      //   this.incomingCaller = data.callerId;
+      //   this.incomingCallNotification = `Incoming Call From ${data.callerId}`;
+
+      //   data.on("RemoteInvitationCanceled", () => {
+      //     console.log("RemoteInvitationCanceled: ");
+      //     this.incomingCallNotification = "Call has been cancelled";
+      //     setTimeout(() => {
+      //       this.incomingCall = false;
+      //     }, 5000);
+      //   });
+      //   data.on("RemoteInvitationAccepted", (data) => {
+      //     console.log("REMOTE INVITATION ACCEPTED: ", data);
+      //   });
+      //   data.on("RemoteInvitationRefused", (data) => {
+      //     console.log("REMOTE INVITATION REFUSED: ", data);
+      //   });
+      //   data.on("RemoteInvitationFailure", (data) => {
+      //     console.log("REMOTE INVITATION FAILURE: ", data);
+      //   });
+      // });
+
+      // Subscribes to the online statuses of all users apart from
+      // the currently authenticated user
+      // this.rtmClient.subscribePeersOnlineStatus(
+      //   this.users
+      //     .map((user) => user.account)
+      //     .filter((user) => user !== this.uid)
+      // );
+
+      // this.rtmClient.on("PeersOnlineStatusChanged", (data) => {
+      //   this.updatedOnlineStatus = data;
+      //   console.log("PeersOnlineStatusChanged", data);
+      // });
+
+      // Create a channel and listen to messages
+      this.rtmChannelInstance = this.rtmClient.createChannel(
+        this.rtmChannelName
+      );
+
+      // Join the RTM Channel
+      this.rtmChannelInstance.join();
+
+      this.rtmChannelInstance.on("ChannelMessage", (message, memberId) => {
+        console.log("ChannelMessage");
+        alert("received channel message");
+        console.log("message: ", message);
+        console.log("memberId: ", memberId);
+        this.messages.push({ memberId: memberId, message: message });
+      });
+
+      this.rtmChannelInstance.on("MemberJoined", (memberId) => {
+        console.log("MemberJoined");
+
+        // check whether user exists before you add them to the online user list
+        const joiningUserIndex = this.onlineUsers.findIndex(
+          (member) => member === memberId
+        );
+        if (joiningUserIndex < 0) {
+          this.onlineUsers.push(memberId);
+        }
+      });
+
+      this.rtmChannelInstance.on("MemberLeft", (memberId) => {
+        console.log("MemberLeft");
+        console.log("memberId: ", memberId);
+        const leavingUserIndex = this.onlineUsers.findIndex(
+          (member) => member === memberId
+        );
+        this.onlineUsers.splice(leavingUserIndex, 1);
+      });
+
+      this.rtmChannelInstance.on("MemberCountUpdated", (data) => {
+        console.log(data);
+        console.log("MemberCountUpdated");
+        // console.log(this);
+      });
+    },
+    async generateToken(channelName, uid) {
+      return await axios.get(
+        `https://agora-rtm-rtc-tokens.onrender.com/tokens?channelName=${channelName}&uid=${uid}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    },
+    async sendChannelMessage() {
+      this.rtmChannelInstance
+        .sendMessage({ text: "test channel message" })
+        .then(() => {
+          console.log("message sent");
+        })
+        .catch((error) => {
+          console.log(error);
+          // Your code for handling the event when the channel message fails to be sent.
+        });
     },
   },
 };

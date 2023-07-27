@@ -103,10 +103,15 @@
 
       <div class="row" v-if="joined">
         <div class="col col-lg-8">
-          <button
-         
+         <div class="row">
+          <div class="col text-end float-end">
+            <div>
+
+              <span class="" v-if="this.joinType === 'host'">Number of audience count  <span class="fw-bold">{{ this.audienceCount - 1 }}</span></span>
+              <span class="" v-if="this.joinType === 'audience'">Number of audience count  <span class="fw-bold">{{ this.audienceCount  }}</span></span>
+              <button
             @click="handleAudioToggle()"
-            v-if="this.joinType==='host'"
+            v-if="this.joinType === 'host'"
             type="button"
             class="btn btn-info"
             id="audioToggle"
@@ -114,6 +119,11 @@
             <i v-if="mutedAudio" class="bi bi-mic-mute"></i>
             <i v-else class="bi bi-mic-fill"></i>
           </button>
+            </div>
+           
+          
+          </div>
+         </div>
 
           <div id="live-stream-section"></div>
         </div>
@@ -122,7 +132,7 @@
             <header class="msger-header">
               <div class="msger-header-title">
                 <i class="fas fa-comment-alt"></i>
-                {{ options.channel }} Chatroom,  {{  audienceCount-1}}
+                {{ options.channel }} Chatroom
               </div>
               <div class="msger-header-options">
                 <span><i class="fas fa-cog"></i></span>
@@ -176,12 +186,12 @@ import AgoraRTC from "agora-rtc-sdk-ng";
 import AgoraRTM from "agora-rtm-sdk";
 import axios from "axios";
 const agoraEngine = AgoraRTC.createClient({ mode: "live", codec: "vp9" });
-
+// import { isProxy, toRaw } from "vue";
 export default {
   data() {
     return {
       text: "",
-      audienceCount:0,
+      audienceCount: null,
       audience: "audience",
       joined: false,
       joinType: "audience",
@@ -226,6 +236,9 @@ export default {
       senderName: "",
       senderTime: "",
       mutedAudio: false,
+      flag: false,
+      live: true,
+      HostId:""
     };
   },
   updated() {
@@ -251,7 +264,7 @@ export default {
       // Specify the ID of the DIV container. You can use the uid of the local user.
       this.localPlayerContainer.id = this.options.uid;
       // Set the textContent property of the local video container to the local user id.
-      this.localPlayerContainer.textContent = "Local user " + this.uid;
+      // this.localPlayerContainer.textContent = "Total Number of Audiences " + this.uid;
       // Set the local video container size.
       this.localPlayerContainer.style.width = "100%";
       this.localPlayerContainer.style.height = "480px";
@@ -260,55 +273,34 @@ export default {
       this.remotePlayerContainer.style.width = "100%";
       this.remotePlayerContainer.style.height = "480px";
       this.remotePlayerContainer.style.padding = "15px 5px 5px 5px";
-
-      // Listen for the "user-published" event to retrieve a AgoraRTCRemoteUser object
-      agoraEngine.on("user-published", async (user, mediaType) => {
-        // Subscribe to the remote user when the SDK triggers the "user-published" event.
-        await agoraEngine.subscribe(user, mediaType);
-        console.log("subscribe success");
-        // Subscribe and play the remote video in the container If the remote user publishes a video track.
-        if (mediaType == "video") {
-          // Retrieve the remote video track.
-          this.channelParameters.remoteVideoTrack = user.videoTrack;
-          // Retrieve the remote audio track.
-          this.channelParameters.remoteAudioTrack = user.audioTrack;
-          // Save the remote user id for reuse.
-          this.channelParameters.remoteUid = user.uid.toString();
-          console.log(user);
-          // alert(user.uid);
-          // Specify the ID of the DIV container. You can use the uid of the remote user.
-          this.remotePlayerContainer.id = user.uid.toString();
-          this.channelParameters.remoteUid = user.uid.toString();
-          this.remotePlayerContainer.textContent =
-            "Remote user " + user.uid.toString();
-          // Append the remote container to the page body.
-          document
-            .getElementById("live-stream-section")
-            .append(this.remotePlayerContainer);
-          if (this.options.role != "host") {
-            // Play the remote video track.
-            this.channelParameters.remoteVideoTrack.play(
-              this.remotePlayerContainer
-            );
-          }
-        }
-        // Subscribe and play the remote audio track If the remote user publishes the audio track only.
-        if (mediaType == "audio") {
-          // Get the RemoteAudioTrack object in the AgoraRTCRemoteUser object.
-          this.channelParameters.remoteAudioTrack = user.audioTrack;
-          // Play the remote audio track. No need to pass any DOM element.
-          this.channelParameters.remoteAudioTrack.play();
-        }
-        // Listen for the "user-unpublished" event.
-        agoraEngine.on("user-unpublished", (user) => {
-          console.log(user.uid + "has left the channel");
-        });
-      });
     },
     async Join() {
-      await this.initRtmInstance()
+      await this.initRtmInstance();
       if (this.joinType == "audience") {
         await this.Audience();
+
+        // setTimeout(() => {
+        //   // debugger
+        //   console.log(this.channelParamaters.remoteUid);
+        //   const value = JSON.parse(JSON.stringify(this.channelParameters));
+        //   console.log(value);
+        // },10000);
+        // const value = JSON.parse(JSON.stringify(this.channelParameters));
+        // console.log(value);
+
+        // console.log(this.channelParameters);
+        // console.log(this.channelParameters.target);
+
+        // isProxy(this.channelParameters)
+        //   ? console.log(true)
+        //   : console.log(false);
+        // if (isProxy(this.channelParameters)) {
+        //   var data = toRaw(this.channelParameters);
+
+        //   console.log(data);
+        //   // console.log(data[0])
+
+        // }
       } else {
         await this.Host();
       }
@@ -323,81 +315,173 @@ export default {
           window.alert("Select a user role first!");
           return;
         }
-        // Join a channel.
-        await agoraEngine.join(
-          this.options.appId,
-          this.options.channel,
-          data.token,
-          this.uid
-        );
-        // Create a local audio track from the audio sampled by a microphone.
-        this.channelParameters.localAudioTrack =
-          await AgoraRTC.createMicrophoneAudioTrack();
-        // Create a local video track from the video captured by a camera.
-        this.channelParameters.localVideoTrack =
-          await AgoraRTC.createCameraVideoTrack();
-        this.joined = true;
+
         // Append the local video container to the page body.
 
         // Publish the local audio and video track if the user joins as a host.
         if (this.options.role == "host") {
+          agoraEngine.on("user-unpublished", async (data) => {
+          console.log("USER UNPUBLISHED: ", data);
+          // alert("un-published")
+         
+        });
+          // Join a channel.
+          await agoraEngine.join(
+            this.options.appId,
+            this.options.channel,
+            data.token,
+            this.uid
+          );
+          this.joined = true;
+
+          // Create a local audio track from the audio sampled by a microphone.
+          this.channelParameters.localAudioTrack =
+            await AgoraRTC.createMicrophoneAudioTrack();
+          // Create a local video track from the video captured by a camera.
+          this.channelParameters.localVideoTrack =
+            await AgoraRTC.createCameraVideoTrack();
           // Publish the local audio and video tracks in the channel.
           await agoraEngine.publish([
             this.channelParameters.localAudioTrack,
             this.channelParameters.localVideoTrack,
           ]);
+
           // Play the local video track.
           this.channelParameters.localVideoTrack.play(
             this.localPlayerContainer
           );
           console.log("publish success!");
-        }
 
-        document
-          .getElementById("live-stream-section")
-          .append(this.localPlayerContainer);
+          document
+            .getElementById("live-stream-section")
+            .append(this.localPlayerContainer);
+        }
       } catch (error) {
         console.log("ee", error.message);
       }
     },
     async Leave() {
       // Destroy the local audio and video tracks.
-      this.rtmClient.logout()
-      this.channelParameters.localAudioTrack.close();
-      this.channelParameters.localVideoTrack.close();
+      await agoraEngine.leave();
+      this.rtmClient.logout();
+      window.location.reload();
+      
+
+      // this.channelParameters.localAudioTrack.close();
+      // this.channelParameters.localVideoTrack.close();
       // Remove the containers you created for the local video and remote video.
       this.removeVideoDiv(this.remotePlayerContainer.id);
       this.removeVideoDiv(this.localPlayerContainer.id);
       // Leave the channel
-      await agoraEngine.leave();
+      
       console.log("You left the channel");
       // Refresh the page for reuse
-      window.location.reload();
+      
     },
     async Audience() {
+      const { data } = await this.generateToken(this.options.channel, this.uid);
+
+      // Listen for the "user-published" event to retrieve a AgoraRTCRemoteUser object
+
+      if (this.isLoggedIn) {
+        agoraEngine.on("user-unpublished", async (data) => {
+          console.log("USER UNPUBLISHED: ", data);
+          alert("un-published Host")
+         
+        });
+        agoraEngine.on("user-published", async (user, mediaType) => {
+          // this.audienceCount=this.audienceCount-1
+
+          // alert("published")
+          // Subscribe to the remote user when the SDK triggers the "user-published" event.
+          await agoraEngine.subscribe(user, mediaType);
+          this.flag = true;
+          // alert(this.flag)
+          console.log("subscribe success");
+          // Subscribe and play the remote video in the container If the remote user publishes a video track.
+          if (mediaType == "video") {
+            // Retrieve the remote video track.
+            this.channelParameters.remoteVideoTrack = user.videoTrack;
+            // Retrieve the remote audio track.
+            this.channelParameters.remoteAudioTrack = user.audioTrack;
+            // Save the remote user id for reuse.
+            this.channelParameters.remoteUid = user.uid.toString();
+            console.log(user);
+            console.log("rid", this.channelParameters.remoteUid);
+            this.live = user.uid.toString();
+            // alert(user.uid);
+            // Specify the ID of the DIV container. You can use the uid of the remote user.
+            this.remotePlayerContainer.id = user.uid.toString();
+            // this.channelParameters.remoteUid = user.uid.toString();
+            this.remotePlayerContainer.textContent =
+              "Remote user " + user.uid.toString()  
+              this.HostId = user.uid.toString()
+            // Append the remote container to the page body.
+            document
+              .getElementById("live-stream-section")
+              .append(this.remotePlayerContainer);
+            if (this.options.role != "host") {
+              // Play the remote video track.
+              this.channelParameters.remoteVideoTrack.play(
+                this.remotePlayerContainer
+              );
+            }
+          }
+          // Subscribe and play the remote audio track If the remote user publishes the audio track only.
+          if (mediaType == "audio") {
+            // Get the RemoteAudioTrack object in the AgoraRTCRemoteUser object.
+            this.channelParameters.remoteAudioTrack = user.audioTrack;
+            // Play the remote audio track. No need to pass any DOM element.
+            this.channelParameters.remoteAudioTrack.play();
+          }
+        });
+        // Listen for the "user-unpublished" event.
+      }
       console.log("Audience");
+      // console.log()
       this.removeVideoDiv(this.remotePlayerContainer.id);
 
       // Save the selected role in a variable for reuse.
       this.options.role = "audience";
 
-      if (
-        this.channelParameters.localAudioTrack != null &&
-        this.channelParameters.localVideoTrack != null
-      ) {
-        if (this.channelParameters.remoteVideoTrack != null) {
-          // Replace the current video track with remote video track
-          await this.channelParamaters.localVideoTrack.replaceTrack(
-            this.channelParamaters.remoteVideoTrack,
-            true
-          );
-        }
-      }
+      // if (
+      //   this.channelParameters.localAudioTrack != null &&
+      //   this.channelParameters.localVideoTrack != null
+      // ) {
+      //   if (this.channelParameters.remoteVideoTrack != null) {
+      //     // Replace the current video track with remote video track
+      //     await this.channelParamaters.localVideoTrack.replaceTrack(
+      //       this.channelParamaters.remoteVideoTrack,
+      //       true
+      //     );
+      //   }
+      // }
       // Call the method to set the role as Audience.
-      return await agoraEngine.setClientRole(this.options.role);
+      await agoraEngine.setClientRole(this.options.role);
+      await agoraEngine.join(
+        this.options.appId,
+        this.options.channel,
+        data.token,
+        this.uid
+      );
+      setTimeout(() => {
+        if (!this.flag) {
+          // this.audienceCount=this.audienceCount-
+          alert("host not started yet! please wait!!!");
+        }
+      }, 8000);
+      // alert("joined");
+      this.joined = true;
+
+      return true;
     },
     async Host() {
       // Save the selected role in a variable for reuse.
+      agoraEngine.on("user-unpublished", async (data) => {
+          console.log("USER UNPUBLISHED: ", data);
+          // alert("un-published ")
+         
+        });
       this.removeVideoDiv(this.options.uid);
       console.log("selected host");
       this.options.role = "host";
@@ -405,23 +489,23 @@ export default {
       await agoraEngine.setClientRole(this.options.role);
       if (this.channelParameters.localVideoTrack != null) {
         // Publish the local audio and video track in the channel.
-        await agoraEngine.publish([
-          this.channelParameters.localAudioTrack,
-          this.channelParameters.localVideoTrack,
-        ]);
+        // await agoraEngine.publish([
+        //   this.channelParameters.localAudioTrack,
+        //   this.channelParameters.localVideoTrack,
+        // ]);
         // Stop playing the remote video.
-        this.channelParameters.remoteVideoTrack.stop();
+        // this.channelParameters.remoteVideoTrack.stop();
         // Start playing the local video.
-        this.channelParameters.localVideoTrack.play(this.localPlayerContainer);
+        // this.channelParameters.localVideoTrack.play(this.localPlayerContainer);
       }
       return true;
     },
-    async Login(){
+    async Login() {
       // initialize an Agora RTM instance
       this.rtmClient = AgoraRTM.createInstance(
         "6fa37398a5be49d187db7c4f060d8530"
       );
-      
+
       // Generate the RTM token
       const { data } = await this.generateToken(this.rtmChannelName, this.uid);
       console.log(data);
@@ -555,7 +639,7 @@ export default {
       });
 
       this.rtmChannelInstance.on("MemberCountUpdated", (data) => {
-        this.audienceCount=data
+        this.audienceCount = data;
         console.log(data);
         console.log("MemberCountUpdated");
         // console.log(this);

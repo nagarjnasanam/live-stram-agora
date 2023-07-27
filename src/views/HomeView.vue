@@ -11,12 +11,24 @@
         </div>
       </div>
       <div class="row justify-content-md-center mt-5">
-          <div class="col col-lg-3">
-            <div class="input-group ">
-              <input type="text" class="form-control" v-model="uid" placeholder="Enter Username" aria-label="Enter Username">
-              <button class="btn btn-outline-secondary" type="button" @click="initRtmInstance()">Sign In</button>
-            </div>
+        <div class="col col-lg-3">
+          <div class="input-group">
+            <input
+              type="text"
+              class="form-control"
+              v-model="uid"
+              placeholder="Enter Username"
+              aria-label="Enter Username"
+            />
+            <button
+              class="btn btn-outline-secondary"
+              type="button"
+              @click="Login()"
+            >
+              Sign In
+            </button>
           </div>
+        </div>
       </div>
     </div>
     <!-- <input placeholder="enter username" v-model="uid" />
@@ -31,48 +43,92 @@
       <div class="row justify-content-md-center" v-if="!joined">
         <div class="col col-lg-3 mt-2">
           <div class="form-check col col-lg-10">
-            <input class="form-check-input" type="radio" v-model="joinType" value="host" id="host" name="joinAs" >
+            <input
+              class="form-check-input"
+              type="radio"
+              v-model="joinType"
+              value="host"
+              id="host"
+              name="joinAs"
+            />
             <label class="form-check-label" for="flexRadioDefault1">
               Join as Host
             </label>
           </div>
           <div class="form-check col col-lg-10">
-            <input class="form-check-input" type="radio" v-model="joinType" value="audience" id="Audience" name="joinAs" checked>
+            <input
+              class="form-check-input"
+              type="radio"
+              v-model="joinType"
+              value="audience"
+              id="Audience"
+              name="joinAs"
+              checked
+            />
             <label class="form-check-label" for="flexRadioDefault2">
               Join as Audience
             </label>
           </div>
         </div>
         <div class="col col-lg-10 mt-2 text-center">
-          <button @click="Join()" v-if="!joined" type="button" class="btn btn-primary me-2" id="join">Join</button>
+          <button
+            @click="Join()"
+            v-if="!joined"
+            type="button"
+            class="btn btn-primary me-2"
+            id="join"
+          >
+            Join
+          </button>
         </div>
       </div>
-      
-      <div class="row justify-content-md-center  mt-5 mb-5" v-if="joined">
+
+      <div class="row justify-content-md-center mt-5 mb-5" v-if="joined">
         <div class="text-center">
-          <h4 class="display-6">You Joined {{ options.channel }} Event as {{ uid }}</h4>
+          <h4 class="display-6">
+            You Joined {{ options.channel }} Event as {{ uid }}
+          </h4>
           <p>Click below button to leave the event</p>
-          <button @click="Leave()" v-if="joined" type="button" class="btn btn-secondary" id="leave">Leave</button>
+          <button
+            @click="Leave()"
+            v-if="joined"
+            type="button"
+            class="btn btn-secondary"
+            id="leave"
+          >
+            Leave
+          </button>
         </div>
       </div>
 
       <div class="row" v-if="joined">
         <div class="col col-lg-8">
-          <div id="live-stream-section">
+          <button
+         
+            @click="handleAudioToggle()"
+            v-if="this.joinType==='host'"
+            type="button"
+            class="btn btn-info"
+            id="audioToggle"
+          >
+            <i v-if="mutedAudio" class="bi bi-mic-mute"></i>
+            <i v-else class="bi bi-mic-fill"></i>
+          </button>
 
-          </div>
+          <div id="live-stream-section"></div>
         </div>
         <div class="col col-lg-4">
           <section class="msger">
             <header class="msger-header">
               <div class="msger-header-title">
-                <i class="fas fa-comment-alt"></i> {{ options.channel }} Chatroom
+                <i class="fas fa-comment-alt"></i>
+                {{ options.channel }} Chatroom,  {{  audienceCount-1}}
               </div>
               <div class="msger-header-options">
                 <span><i class="fas fa-cog"></i></span>
               </div>
             </header>
-    
+
             <main class="msger-chat">
               <div class="msg left-msg">
                 <div
@@ -81,22 +137,21 @@
                     background-image: url(https://www.gravatar.com/avatar/00000000000000000000000000000000?d=retro&f=y);
                   "
                 ></div>
-    
+
                 <div class="msg-bubble">
                   <div class="msg-info">
-                    <div class="msg-info-name">{{senderName}}</div>
-                    <div class="msg-info-time">{{senderTime}}</div>
+                    <div class="msg-info-name">{{ senderName }}</div>
+                    <div class="msg-info-time">{{ senderTime }}</div>
                   </div>
-    
+
                   <div class="msg-text">
-                    Hi, welcome to {{ options.channelName}} Event! Go ahead and send me a message. 😄
+                    Hi, welcome to {{ options.channel }} Event! Go ahead and
+                    send me a message. 😄
                   </div>
                 </div>
               </div>
-    
-              
             </main>
-    
+
             <form
               class="msger-inputarea"
               action="javascript:;"
@@ -125,10 +180,11 @@ const agoraEngine = AgoraRTC.createClient({ mode: "live", codec: "vp9" });
 export default {
   data() {
     return {
-      text:"",
+      text: "",
+      audienceCount:0,
       audience: "audience",
       joined: false,
-      joinType: 'audience',
+      joinType: "audience",
       remotePlayerContainer: null,
       localPlayerContainer: null,
       options: {
@@ -163,14 +219,18 @@ export default {
       onlineUsers: [],
       isLoggedIn: false,
       uid: null,
-      messages: [{ memberId: 1, message: "adadsadas" }, { memberId: 1, message: "adadsadas" }],
-      senderName:"",
-      senderTime:""
+      messages: [
+        { memberId: 1, message: "adadsadas" },
+        { memberId: 1, message: "adadsadas" },
+      ],
+      senderName: "",
+      senderTime: "",
+      mutedAudio: false,
     };
   },
-  updated(){
-    console.log('joinType', this.joinType)
-  }, 
+  updated() {
+    console.log("joinType", this.joinType);
+  },
   async mounted() {
     await this.startBasicCall();
   },
@@ -222,7 +282,9 @@ export default {
           this.remotePlayerContainer.textContent =
             "Remote user " + user.uid.toString();
           // Append the remote container to the page body.
-          document.getElementById('live-stream-section').append(this.remotePlayerContainer);
+          document
+            .getElementById("live-stream-section")
+            .append(this.remotePlayerContainer);
           if (this.options.role != "host") {
             // Play the remote video track.
             this.channelParameters.remoteVideoTrack.play(
@@ -244,15 +306,19 @@ export default {
       });
     },
     async Join() {
-      if(this.joinType == 'audience'){
-        await this.Audience()
+      await this.initRtmInstance()
+      if (this.joinType == "audience") {
+        await this.Audience();
       } else {
-        await this.Host()
+        await this.Host();
       }
-      console.log('staty')
+      console.log("staty");
 
       try {
-        const { data } = await this.generateToken(this.options.channel, this.uid);
+        const { data } = await this.generateToken(
+          this.options.channel,
+          this.uid
+        );
         if (this.options.role == "") {
           window.alert("Select a user role first!");
           return;
@@ -270,9 +336,9 @@ export default {
         // Create a local video track from the video captured by a camera.
         this.channelParameters.localVideoTrack =
           await AgoraRTC.createCameraVideoTrack();
-          this.joined = true;
+        this.joined = true;
         // Append the local video container to the page body.
-        
+
         // Publish the local audio and video track if the user joins as a host.
         if (this.options.role == "host") {
           // Publish the local audio and video tracks in the channel.
@@ -281,18 +347,22 @@ export default {
             this.channelParameters.localVideoTrack,
           ]);
           // Play the local video track.
-          this.channelParameters.localVideoTrack.play(this.localPlayerContainer);
+          this.channelParameters.localVideoTrack.play(
+            this.localPlayerContainer
+          );
           console.log("publish success!");
         }
-        
-        document.getElementById('live-stream-section').append(this.localPlayerContainer);
-        
+
+        document
+          .getElementById("live-stream-section")
+          .append(this.localPlayerContainer);
       } catch (error) {
-        console.log('ee', error.message)
+        console.log("ee", error.message);
       }
     },
     async Leave() {
       // Destroy the local audio and video tracks.
+      this.rtmClient.logout()
       this.channelParameters.localAudioTrack.close();
       this.channelParameters.localVideoTrack.close();
       // Remove the containers you created for the local video and remote video.
@@ -346,15 +416,12 @@ export default {
       }
       return true;
     },
-    async initRtmInstance() {
+    async Login(){
       // initialize an Agora RTM instance
       this.rtmClient = AgoraRTM.createInstance(
         "6fa37398a5be49d187db7c4f060d8530"
       );
-
-      // RTM Channel to be used
-      this.rtmChannelName = this.options.channel;
-
+      
       // Generate the RTM token
       const { data } = await this.generateToken(this.rtmChannelName, this.uid);
       console.log(data);
@@ -370,6 +437,31 @@ export default {
         });
 
       this.isLoggedIn = true;
+    },
+    async initRtmInstance() {
+      // initialize an Agora RTM instance
+      // this.rtmClient = AgoraRTM.createInstance(
+      //   "6fa37398a5be49d187db7c4f060d8530"
+      // );
+
+      // RTM Channel to be used
+      this.rtmChannelName = this.options.channel;
+
+      // Generate the RTM token
+      // const { data } = await this.generateToken(this.rtmChannelName, this.uid);
+      // console.log(data);
+
+      // Login when it mounts
+      // await this.rtmClient
+      //   .login({
+      //     uid: this.uid,
+      //     token: data.rtm_token,
+      //   })
+      //   .then(() => {
+      //     console.log("RTM client logged in success ");
+      //   });
+
+      // this.isLoggedIn = true;
 
       // RTM Message Listeners
       this.rtmClient.on("MessageFromPeer", (message, peerId) => {
@@ -435,9 +527,9 @@ export default {
         // alert("received channel message");
         console.log("message: ", message);
         console.log("memberId: ", memberId);
-        this.senderName=memberId
-        this.senderName = this.formatDate(new Date())
-        this.botResponse(message.text,memberId)
+        this.senderName = memberId;
+        this.senderName = this.formatDate(new Date());
+        this.botResponse(message.text, memberId);
         this.messages.push({ memberId: memberId, message: message });
       });
 
@@ -463,6 +555,7 @@ export default {
       });
 
       this.rtmChannelInstance.on("MemberCountUpdated", (data) => {
+        this.audienceCount=data
         console.log(data);
         console.log("MemberCountUpdated");
         // console.log(this);
@@ -482,14 +575,14 @@ export default {
       this.rtmChannelInstance
         .sendMessage({ text: this.text })
         .then((res) => {
-          console.log(res)
+          console.log(res);
           console.log("message sent");
           const PERSON_IMG =
             "https://image.flaticon.com/icons/svg/145/145867.svg";
           const PERSON_NAME = this.uid;
 
           this.appendMessage(PERSON_NAME, PERSON_IMG, "right", this.text);
-          this.text=""
+          this.text = "";
         })
         .catch((error) => {
           console.log(error);
@@ -524,12 +617,21 @@ export default {
 
       return `${h.slice(-2)}:${m.slice(-2)}`;
     },
-    botResponse(msgText,BOT_NAME ) {
-          // const BOT_NAME = "BOT";
+    botResponse(msgText, BOT_NAME) {
+      // const BOT_NAME = "BOT";
 
-          const BOT_IMG = "https://image.flaticon.com/icons/svg/327/327779.svg";
+      const BOT_IMG = "https://image.flaticon.com/icons/svg/327/327779.svg";
 
-        this.appendMessage(BOT_NAME, BOT_IMG, "left", msgText);  
+      this.appendMessage(BOT_NAME, BOT_IMG, "left", msgText);
+    },
+    async handleAudioToggle() {
+      if (this.mutedAudio) {
+        await this.channelParameters.localAudioTrack.setMuted(!this.mutedAudio);
+        this.mutedAudio = false;
+      } else {
+        await this.channelParameters.localAudioTrack.setMuted(!this.mutedAudio);
+        this.mutedAudio = true;
+      }
     },
   },
 };

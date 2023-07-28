@@ -13,26 +13,15 @@
       <div class="row justify-content-md-center mt-5">
         <div class="col col-lg-3">
           <div class="input-group">
-            <input
-              type="text"
-              class="form-control"
-              v-model="uid"
-              placeholder="Enter Username"
-              aria-label="Enter Username"
-            />
-            <button
-              class="btn btn-outline-secondary"
-              type="button"
-              @click="Login()"
-            >
+            <input type="text" class="form-control" v-model="uid" placeholder="Enter Username"
+              aria-label="Enter Username" />
+            <button class="btn btn-outline-secondary" type="button" @click="Login()">
               Sign In
             </button>
           </div>
         </div>
       </div>
     </div>
-    <!-- <input placeholder="enter username" v-model="uid" />
-    <button @click="initRtmInstance()">Sign In</button> -->
 
     <div class="container-fluid" v-if="isLoggedIn">
       <div class="row" v-if="!joined">
@@ -43,41 +32,21 @@
       <div class="row justify-content-md-center" v-if="!joined">
         <div class="col col-lg-3 mt-2">
           <div class="form-check col col-lg-10">
-            <input
-              class="form-check-input"
-              type="radio"
-              v-model="joinType"
-              value="host"
-              id="host"
-              name="joinAs"
-            />
+            <input class="form-check-input" type="radio" v-model="joinType" value="host" id="host" name="joinAs" />
             <label class="form-check-label" for="flexRadioDefault1">
               Join as Host
             </label>
           </div>
           <div class="form-check col col-lg-10">
-            <input
-              class="form-check-input"
-              type="radio"
-              v-model="joinType"
-              value="audience"
-              id="Audience"
-              name="joinAs"
-              checked
-            />
+            <input class="form-check-input" type="radio" v-model="joinType" value="audience" id="Audience" name="joinAs"
+              checked />
             <label class="form-check-label" for="flexRadioDefault2">
               Join as Audience
             </label>
           </div>
         </div>
         <div class="col col-lg-10 mt-2 text-center">
-          <button
-            @click="Join()"
-            v-if="!joined"
-            type="button"
-            class="btn btn-primary me-2"
-            id="join"
-          >
+          <button @click="Join()" v-if="!joined" type="button" class="btn btn-primary me-2" id="join">
             Join
           </button>
         </div>
@@ -89,13 +58,7 @@
             You Joined {{ options.channel }} Event as {{ uid }}
           </h4>
           <p>Click below button to leave the event</p>
-          <button
-            @click="Leave()"
-            v-if="joined"
-            type="button"
-            class="btn btn-secondary"
-            id="leave"
-          >
+          <button @click="Leave()" v-if="joined" type="button" class="btn btn-secondary" id="leave">
             Leave
           </button>
         </div>
@@ -103,27 +66,26 @@
 
       <div class="row" v-if="joined">
         <div class="col col-lg-8">
-         <div class="row">
-          <div class="col text-end float-end">
-            <div>
-
-              <span class="" v-if="this.joinType === 'host'">Number of audience count  <span class="fw-bold">{{ this.audienceCount - 1 }}</span></span>
-              <span class="" v-if="this.joinType === 'audience'">Number of audience count  <span class="fw-bold">{{ this.audienceCount  }}</span></span>
-              <button
-            @click="handleAudioToggle()"
-            v-if="this.joinType === 'host'"
-            type="button"
-            class="btn btn-info"
-            id="audioToggle"
-          >
-            <i v-if="mutedAudio" class="bi bi-mic-mute"></i>
-            <i v-else class="bi bi-mic-fill"></i>
-          </button>
+          <div class="row">
+            <div v-if="this.joinType === 'audience'">
+              <h1 v-if="flag === false"> Live not started yet ,so stay on call !!</h1>
             </div>
-           
-          
+            <div class="col text-end float-end">
+              <div>
+                <span class="" v-if="this.joinType === 'host'">Number of audience count
+                  <span class="fw-bold" v-if="this.audienceCount >= 1">{{
+                    this.audienceCount - 1
+                  }}</span></span>
+                <span class="" v-if="this.joinType === 'audience'">Number of audience count
+                  <span class="fw-bold">{{ this.audienceCount }}</span></span>
+                <button @click="handleAudioToggle()" v-if="this.joinType === 'host'" type="button" class="btn btn-info"
+                  id="audioToggle">
+                  <i v-if="mutedAudio" class="bi bi-mic-mute"></i>
+                  <i v-else class="bi bi-mic-fill"></i>
+                </button>
+              </div>
+            </div>
           </div>
-         </div>
 
           <div id="live-stream-section"></div>
         </div>
@@ -141,12 +103,9 @@
 
             <main class="msger-chat">
               <div class="msg left-msg">
-                <div
-                  class="msg-img"
-                  style="
+                <div class="msg-img" style="
                     background-image: url(https://www.gravatar.com/avatar/00000000000000000000000000000000?d=retro&f=y);
-                  "
-                ></div>
+                  "></div>
 
                 <div class="msg-bubble">
                   <div class="msg-info">
@@ -162,17 +121,8 @@
               </div>
             </main>
 
-            <form
-              class="msger-inputarea"
-              action="javascript:;"
-              @submit="sendChannelMessage()"
-            >
-              <input
-                type="text"
-                class="msger-input"
-                placeholder="Enter your message..."
-                v-model="text"
-              />
+            <form class="msger-inputarea" action="javascript:;" @submit="sendChannelMessage()">
+              <input type="text" class="msger-input" placeholder="Enter your message..." v-model="text" />
               <button type="submit" class="msger-send-btn">Send</button>
             </form>
           </section>
@@ -186,7 +136,6 @@ import AgoraRTC from "agora-rtc-sdk-ng";
 import AgoraRTM from "agora-rtm-sdk";
 import axios from "axios";
 const agoraEngine = AgoraRTC.createClient({ mode: "live", codec: "vp9" });
-// import { isProxy, toRaw } from "vue";
 export default {
   data() {
     return {
@@ -238,7 +187,7 @@ export default {
       mutedAudio: false,
       flag: false,
       live: true,
-      HostId:""
+      HostId: "",
     };
   },
   updated() {
@@ -246,6 +195,9 @@ export default {
   },
   async mounted() {
     await this.startBasicCall();
+    console.log(process.env.VUE_APP_APP_ID);
+    console.log(process.env.VUE_APP_CHANNEL);
+    this.options.channel = process.env.VUE_APP_CHANNEL;
   },
   methods: {
     removeVideoDiv(elementId) {
@@ -278,29 +230,6 @@ export default {
       await this.initRtmInstance();
       if (this.joinType == "audience") {
         await this.Audience();
-
-        // setTimeout(() => {
-        //   // debugger
-        //   console.log(this.channelParamaters.remoteUid);
-        //   const value = JSON.parse(JSON.stringify(this.channelParameters));
-        //   console.log(value);
-        // },10000);
-        // const value = JSON.parse(JSON.stringify(this.channelParameters));
-        // console.log(value);
-
-        // console.log(this.channelParameters);
-        // console.log(this.channelParameters.target);
-
-        // isProxy(this.channelParameters)
-        //   ? console.log(true)
-        //   : console.log(false);
-        // if (isProxy(this.channelParameters)) {
-        //   var data = toRaw(this.channelParameters);
-
-        //   console.log(data);
-        //   // console.log(data[0])
-
-        // }
       } else {
         await this.Host();
       }
@@ -321,10 +250,8 @@ export default {
         // Publish the local audio and video track if the user joins as a host.
         if (this.options.role == "host") {
           agoraEngine.on("user-unpublished", async (data) => {
-          console.log("USER UNPUBLISHED: ", data);
-          // alert("un-published")
-         
-        });
+            console.log("USER UNPUBLISHED: ", data);
+          });
           // Join a channel.
           await agoraEngine.join(
             this.options.appId,
@@ -362,21 +289,23 @@ export default {
     },
     async Leave() {
       // Destroy the local audio and video tracks.
+      if (this.options.role === "host") {
+        this.channelParameters.localAudioTrack.removeAllListeners();
+        this.channelParameters.localVideoTrack.removeAllListeners();
+        agoraEngine.unpublish();
+      }
       await agoraEngine.leave();
       this.rtmClient.logout();
       window.location.reload();
-      
 
-      // this.channelParameters.localAudioTrack.close();
-      // this.channelParameters.localVideoTrack.close();
+
       // Remove the containers you created for the local video and remote video.
       this.removeVideoDiv(this.remotePlayerContainer.id);
       this.removeVideoDiv(this.localPlayerContainer.id);
       // Leave the channel
-      
+
       console.log("You left the channel");
       // Refresh the page for reuse
-      
     },
     async Audience() {
       const { data } = await this.generateToken(this.options.channel, this.uid);
@@ -386,17 +315,14 @@ export default {
       if (this.isLoggedIn) {
         agoraEngine.on("user-unpublished", async (data) => {
           console.log("USER UNPUBLISHED: ", data);
-          alert("un-published Host")
-         
         });
         agoraEngine.on("user-published", async (user, mediaType) => {
+          this.flag = true;
+
           // this.audienceCount=this.audienceCount-1
 
-          // alert("published")
           // Subscribe to the remote user when the SDK triggers the "user-published" event.
           await agoraEngine.subscribe(user, mediaType);
-          this.flag = true;
-          // alert(this.flag)
           console.log("subscribe success");
           // Subscribe and play the remote video in the container If the remote user publishes a video track.
           if (mediaType == "video") {
@@ -409,13 +335,12 @@ export default {
             console.log(user);
             console.log("rid", this.channelParameters.remoteUid);
             this.live = user.uid.toString();
-            // alert(user.uid);
             // Specify the ID of the DIV container. You can use the uid of the remote user.
             this.remotePlayerContainer.id = user.uid.toString();
             // this.channelParameters.remoteUid = user.uid.toString();
             this.remotePlayerContainer.textContent =
-              "Remote user " + user.uid.toString()  
-              this.HostId = user.uid.toString()
+              "Remote user " + user.uid.toString();
+            this.HostId = user.uid.toString();
             // Append the remote container to the page body.
             document
               .getElementById("live-stream-section")
@@ -444,18 +369,6 @@ export default {
       // Save the selected role in a variable for reuse.
       this.options.role = "audience";
 
-      // if (
-      //   this.channelParameters.localAudioTrack != null &&
-      //   this.channelParameters.localVideoTrack != null
-      // ) {
-      //   if (this.channelParameters.remoteVideoTrack != null) {
-      //     // Replace the current video track with remote video track
-      //     await this.channelParamaters.localVideoTrack.replaceTrack(
-      //       this.channelParamaters.remoteVideoTrack,
-      //       true
-      //     );
-      //   }
-      // }
       // Call the method to set the role as Audience.
       await agoraEngine.setClientRole(this.options.role);
       await agoraEngine.join(
@@ -466,11 +379,9 @@ export default {
       );
       setTimeout(() => {
         if (!this.flag) {
-          // this.audienceCount=this.audienceCount-
-          alert("host not started yet! please wait!!!");
+          // alert("host not started yet! please wait!!!");
         }
-      }, 8000);
-      // alert("joined");
+      }, 3000);
       this.joined = true;
 
       return true;
@@ -478,10 +389,8 @@ export default {
     async Host() {
       // Save the selected role in a variable for reuse.
       agoraEngine.on("user-unpublished", async (data) => {
-          console.log("USER UNPUBLISHED: ", data);
-          // alert("un-published ")
-         
-        });
+        console.log("USER UNPUBLISHED: ", data);
+      });
       this.removeVideoDiv(this.options.uid);
       console.log("selected host");
       this.options.role = "host";
@@ -502,9 +411,7 @@ export default {
     },
     async Login() {
       // initialize an Agora RTM instance
-      this.rtmClient = AgoraRTM.createInstance(
-        "6fa37398a5be49d187db7c4f060d8530"
-      );
+      this.rtmClient = AgoraRTM.createInstance(process.env.VUE_APP_APP_ID);
 
       // Generate the RTM token
       const { data } = await this.generateToken(this.rtmChannelName, this.uid);
@@ -523,29 +430,8 @@ export default {
       this.isLoggedIn = true;
     },
     async initRtmInstance() {
-      // initialize an Agora RTM instance
-      // this.rtmClient = AgoraRTM.createInstance(
-      //   "6fa37398a5be49d187db7c4f060d8530"
-      // );
-
       // RTM Channel to be used
       this.rtmChannelName = this.options.channel;
-
-      // Generate the RTM token
-      // const { data } = await this.generateToken(this.rtmChannelName, this.uid);
-      // console.log(data);
-
-      // Login when it mounts
-      // await this.rtmClient
-      //   .login({
-      //     uid: this.uid,
-      //     token: data.rtm_token,
-      //   })
-      //   .then(() => {
-      //     console.log("RTM client logged in success ");
-      //   });
-
-      // this.isLoggedIn = true;
 
       // RTM Message Listeners
       this.rtmClient.on("MessageFromPeer", (message, peerId) => {
@@ -560,43 +446,6 @@ export default {
         console.log("state: ", state);
         console.log("reason: ", reason);
       });
-      // Emitted when a Call Invitation is sent from Remote User
-      // this.rtmClient.on("RemoteInvitationReceived", (data) => {
-      //   this.remoteInvitation = data;
-      //   this.incomingCall = true;
-      //   this.incomingCaller = data.callerId;
-      //   this.incomingCallNotification = `Incoming Call From ${data.callerId}`;
-
-      //   data.on("RemoteInvitationCanceled", () => {
-      //     console.log("RemoteInvitationCanceled: ");
-      //     this.incomingCallNotification = "Call has been cancelled";
-      //     setTimeout(() => {
-      //       this.incomingCall = false;
-      //     }, 5000);
-      //   });
-      //   data.on("RemoteInvitationAccepted", (data) => {
-      //     console.log("REMOTE INVITATION ACCEPTED: ", data);
-      //   });
-      //   data.on("RemoteInvitationRefused", (data) => {
-      //     console.log("REMOTE INVITATION REFUSED: ", data);
-      //   });
-      //   data.on("RemoteInvitationFailure", (data) => {
-      //     console.log("REMOTE INVITATION FAILURE: ", data);
-      //   });
-      // });
-
-      // Subscribes to the online statuses of all users apart from
-      // the currently authenticated user
-      // this.rtmClient.subscribePeersOnlineStatus(
-      //   this.users
-      //     .map((user) => user.account)
-      //     .filter((user) => user !== this.uid)
-      // );
-
-      // this.rtmClient.on("PeersOnlineStatusChanged", (data) => {
-      //   this.updatedOnlineStatus = data;
-      //   console.log("PeersOnlineStatusChanged", data);
-      // });
 
       // Create a channel and listen to messages
       this.rtmChannelInstance = this.rtmClient.createChannel(
@@ -608,7 +457,6 @@ export default {
 
       this.rtmChannelInstance.on("ChannelMessage", (message, memberId) => {
         console.log("ChannelMessage");
-        // alert("received channel message");
         console.log("message: ", message);
         console.log("memberId: ", memberId);
         this.senderName = memberId;
@@ -770,23 +618,29 @@ html {
   padding: 10px;
   height: 250px;
 }
+
 .msger-chat::-webkit-scrollbar {
   width: 6px;
 }
+
 .msger-chat::-webkit-scrollbar-track {
   background: #ddd;
 }
+
 .msger-chat::-webkit-scrollbar-thumb {
   background: #bdbdbd;
 }
+
 .msg {
   display: flex;
   align-items: flex-end;
   margin-bottom: 10px;
 }
+
 .msg:last-of-type {
   margin: 0;
 }
+
 .msg-img {
   width: 50px;
   height: 50px;
@@ -797,22 +651,26 @@ html {
   background-size: cover;
   border-radius: 50%;
 }
+
 .msg-bubble {
   max-width: 450px;
   padding: 15px;
   border-radius: 15px;
   background: var(--left-msg-bg);
 }
+
 .msg-info {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
 }
+
 .msg-info-name {
   margin-right: 10px;
   font-weight: bold;
 }
+
 .msg-info-time {
   font-size: 0.85em;
 }
@@ -824,11 +682,13 @@ html {
 .right-msg {
   flex-direction: row-reverse;
 }
+
 .right-msg .msg-bubble {
   background: var(--right-msg-bg);
   color: #fff;
   border-bottom-right-radius: 0;
 }
+
 .right-msg .msg-img {
   margin: 0 0 0 10px;
 }
@@ -839,16 +699,19 @@ html {
   border-top: var(--border);
   background: #eee;
 }
+
 .msger-inputarea * {
   padding: 10px;
   border: none;
   border-radius: 3px;
   font-size: 1em;
 }
+
 .msger-input {
   flex: 1;
   background: #ddd;
 }
+
 .msger-send-btn {
   margin-left: 10px;
   background: rgb(0, 196, 65);
@@ -857,6 +720,7 @@ html {
   cursor: pointer;
   transition: background 0.23s;
 }
+
 .msger-send-btn:hover {
   background: rgb(0, 180, 50);
 }

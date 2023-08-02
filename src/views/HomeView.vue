@@ -127,7 +127,7 @@
             You Joined as a {{ joinType }} to the {{ options.channel }} Event as
             {{ uid }}
           </h4>
-          <p>Click below button to leave the event {{ HostId }}</p>
+          <p>Click below button to leave the event</p>
           <button
             @click="Leave()"
             v-if="joined"

@@ -145,8 +145,16 @@
           <div class="row">
             <div v-if="this.joinType === 'audience'">
               <h1 v-if="flag === false">
-                Live not started yet ,so stay on call !!
+                Event not started yet ,so stay on call !!
               </h1>
+            </div>
+            <div class="col text-start float-start">
+              <span class="" v-if="this.joinType === 'audience'"
+                  >Host : 
+                  <span class="fw-bold">{{
+                    this.HostId
+                  }}</span></span
+                >
             </div>
             <div class="col text-end float-end">
               <div>
@@ -518,8 +526,8 @@ export default {
             // Specify the ID of the DIV container. You can use the uid of the remote user.
             this.remotePlayerContainer.id = user.uid.toString();
             // this.channelParameters.remoteUid = user.uid.toString();
-            this.remotePlayerContainer.textContent =
-              "Host " + user.uid.toString();
+            // this.remotePlayerContainer.textContent =
+            //   "Host " + user.uid.toString();
             this.HostId = user.uid.toString();
             // Append the remote container to the page body.
             document

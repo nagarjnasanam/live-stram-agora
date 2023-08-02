@@ -1,21 +1,11 @@
 <template>
   <div class="about">
-    <div class="text-center">
-      <v-dialog v-model="dialog" width="auto">
-        <v-card>
-          <v-card-text>
-            {{ this.alertText }}
-          </v-card-text>
-          <v-card-actions>
-            <v-btn color="primary" block @click="() => {
-                this.dialog = false;
-              }
-              ">Close
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-    </div>
+    <VuetifyDialog
+      v-if="dialog"
+      :alertText="alertText"
+      :dialog="dialog"
+      @close-dialog="close()"
+    />
     <div class="container-fluid" v-if="!isLoggedIn">
       <div class="row mt-5">
         <div class="text-center">
@@ -29,9 +19,19 @@
       <div class="row justify-content-md-center mt-5">
         <div class="col col-lg-3">
           <div class="input-group">
-            <input type="text" class="form-control" v-model="uid" placeholder="Enter Username"
-              aria-label="Enter Username" />
-            <button class="btn btn-outline-secondary" type="button" @click="Login()" :disabled="loader">
+            <input
+              type="text"
+              class="form-control"
+              v-model="uid"
+              placeholder="Enter Username"
+              aria-label="Enter Username"
+            />
+            <button
+              class="btn btn-outline-secondary"
+              type="button"
+              @click="Login()"
+              :disabled="loader"
+            >
               <div v-if="loader">
                 <div class="spinner-border" role="status">
                   <span class="visually-hidden">Loading...</span>
@@ -50,8 +50,8 @@
           <h4 class="display-6">
             {{
               mongodb.flag
-              ? "Join as an audience to the Event"
-              : "Choose your option"
+                ? "Join as an audience to the Event"
+                : "Choose your option"
             }}
           </h4>
           <!-- <p>{{ mongodb.flag }}</p> -->
@@ -60,21 +60,42 @@
       <div class="row justify-content-md-center" v-if="!joined">
         <div class="col col-lg-3 mt-2">
           <div class="form-check col col-lg-10" v-if="!mongodb.flag">
-            <input class="form-check-input" type="radio" v-model="joinType" value="host" id="host" name="joinAs" />
+            <input
+              class="form-check-input"
+              type="radio"
+              v-model="joinType"
+              value="host"
+              id="host"
+              name="joinAs"
+            />
             <label class="form-check-label" for="flexRadioDefault1">
               Join as Host
             </label>
           </div>
           <div class="form-check col col-lg-10" v-if="!mongodb.flag">
-            <input class="form-check-input" type="radio" v-model="joinType" value="audience" id="Audience" name="joinAs"
-              checked />
+            <input
+              class="form-check-input"
+              type="radio"
+              v-model="joinType"
+              value="audience"
+              id="Audience"
+              name="joinAs"
+              checked
+            />
             <label class="form-check-label" for="flexRadioDefault2">
               Join as Audience
             </label>
           </div>
         </div>
         <div class="col col-lg-10 mt-2 text-center">
-          <button :disabled="loader" @click="Join()" v-if="!joined" type="button" class="btn btn-primary me-2" id="join">
+          <button
+            :disabled="loader"
+            @click="Join()"
+            v-if="!joined"
+            type="button"
+            class="btn btn-primary me-2"
+            id="join"
+          >
             <div v-if="loader">
               <div class="spinner-border" role="status">
                 <span class="visually-hidden">Loading...</span>
@@ -92,7 +113,13 @@
             {{ uid }}
           </h4>
           <p>Click below button to leave the event</p>
-          <button @click="Leave()" v-if="joined" type="button" class="btn btn-secondary" id="leave">
+          <button
+            @click="Leave()"
+            v-if="joined"
+            type="button"
+            class="btn btn-secondary"
+            id="leave"
+          >
             Leave
           </button>
         </div>
@@ -107,19 +134,29 @@
               </h1>
             </div>
             <div class="col text-start float-start">
-              <span class="" v-if="this.joinType === 'audience'">Host : <span class="fw-bold">{{ this.HostId
-              }}</span></span>
+              <span class="" v-if="this.joinType === 'audience'"
+                >Host : <span class="fw-bold">{{ this.HostId }}</span></span
+              >
             </div>
             <div class="col text-end float-end">
               <div>
-                <span class="" v-if="this.joinType === 'host'">Number of audience count
+                <span class="" v-if="this.joinType === 'host'"
+                  >Number of audience count
                   <span class="fw-bold" v-if="this.audienceCount >= 1">{{
                     this.audienceCount - 1
-                  }}</span></span>
-                <span class="" v-if="this.joinType === 'audience'">Number of audience count
-                  <span class="fw-bold">{{ this.audienceCount }}</span></span>
-                <button @click="handleAudioToggle()" v-if="this.joinType === 'host'" type="button" class="btn btn-info"
-                  id="audioToggle">
+                  }}</span></span
+                >
+                <span class="" v-if="this.joinType === 'audience'"
+                  >Number of audience count
+                  <span class="fw-bold">{{ this.audienceCount }}</span></span
+                >
+                <button
+                  @click="handleAudioToggle()"
+                  v-if="this.joinType === 'host'"
+                  type="button"
+                  class="btn btn-info"
+                  id="audioToggle"
+                >
                   <i v-if="mutedAudio" class="bi bi-mic-mute"></i>
                   <i v-else class="bi bi-mic-fill"></i>
                 </button>
@@ -143,9 +180,12 @@
 
             <main class="msger-chat">
               <div class="msg left-msg">
-                <div class="msg-img" style="
+                <div
+                  class="msg-img"
+                  style="
                     background-image: url(https://www.gravatar.com/avatar/00000000000000000000000000000000?d=retro&f=y);
-                  "></div>
+                  "
+                ></div>
 
                 <div class="msg-bubble">
                   <div class="msg-info">
@@ -161,8 +201,17 @@
               </div>
             </main>
 
-            <form class="msger-inputarea" action="javascript:;" @submit="sendChannelMessage()">
-              <input type="text" class="msger-input" placeholder="Enter your message..." v-model="text" />
+            <form
+              class="msger-inputarea"
+              action="javascript:;"
+              @submit="sendChannelMessage()"
+            >
+              <input
+                type="text"
+                class="msger-input"
+                placeholder="Enter your message..."
+                v-model="text"
+              />
               <button type="submit" class="msger-send-btn">Send</button>
             </form>
           </section>
@@ -175,9 +224,13 @@
 import AgoraRTC from "agora-rtc-sdk-ng";
 import AgoraRTM from "agora-rtm-sdk";
 import axios from "axios";
+import VuetifyDialog from "@/components/VuetifyDialog.vue";
 // import { flip } from '@popperjs/core';
 const agoraEngine = AgoraRTC.createClient({ mode: "live", codec: "vp9" });
 export default {
+  components: {
+    VuetifyDialog,
+  },
   data() {
     return {
       text: "",
@@ -267,6 +320,11 @@ export default {
     this.options.channel = process.env.VUE_APP_CHANNEL;
   },
   methods: {
+    close() {
+      // alert(this.dialog)
+      this.dialog = false;
+      // alert(this.dialog)
+    },
     removeVideoDiv(elementId) {
       console.log("Removing " + elementId + "Div");
       let Div = document.getElementById(elementId);
@@ -306,6 +364,7 @@ export default {
           var data = res.data[0];
           if (data) {
             if (data.flag && this.joinType === "host") {
+              alert("hhh");
               this.dialog = true;
               this.alertText =
                 "Livecast already started!, you can not join as a Host";

@@ -45,8 +45,14 @@
               class="btn btn-outline-secondary"
               type="button"
               @click="Login()"
+              :disabled="loader"
             >
-              Sign In
+              <div v-if="loader">
+                <div class="spinner-border" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+              <div v-else>Sign In</div>
             </button>
           </div>
         </div>
@@ -98,13 +104,19 @@
         </div>
         <div class="col col-lg-10 mt-2 text-center">
           <button
+            :disabled="loader"
             @click="Join()"
             v-if="!joined"
             type="button"
             class="btn btn-primary me-2"
             id="join"
           >
-            Join
+            <div v-if="loader">
+              <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+            <div v-else>Sign IN</div>
           </button>
         </div>
       </div>
@@ -168,11 +180,11 @@
           <section class="msger">
             <header class="msger-header">
               <div class="msger-header-title">
-                <i class="fas fa-comment-alt"></i>
+                <font-awesome-icon icon="fa-solid fa-comment-alt" />
                 {{ options.channel }} Chatroom
               </div>
               <div class="msger-header-options">
-                <span><i class="fas fa-cog"></i></span>
+                <span><font-awesome-icon icon="fa-solid fa-cog" /></span>
               </div>
             </header>
 
@@ -228,6 +240,7 @@ export default {
   data() {
     return {
       text: "",
+      loader: false,
       dialog: false,
       alertText: "",
       mongodb: {
@@ -340,6 +353,7 @@ export default {
       this.remotePlayerContainer.style.padding = "15px 5px 5px 5px";
     },
     async Join() {
+      this.loader = true;
       await axios
         .get(`https://livestream-backend-8mme.onrender.com/getStatus`, {
           headers: {
@@ -407,6 +421,7 @@ export default {
               this.uid
             );
             await this.initRtmInstance();
+            this.loader = false;
 
             this.joined = true;
 
@@ -540,6 +555,8 @@ export default {
         data.token,
         this.uid
       );
+      this.loader = false;
+
       await this.initRtmInstance();
 
       setTimeout(() => {
@@ -575,6 +592,7 @@ export default {
       return true;
     },
     async Login() {
+      this.loader = true;
       await axios
         .get(`https://livestream-backend-8mme.onrender.com/getStatus`, {
           headers: {
@@ -607,6 +625,7 @@ export default {
         .then(() => {
           console.log("RTM client logged in success ");
         });
+      this.loader = false;
 
       this.isLoggedIn = true;
     },

@@ -519,7 +519,7 @@ export default {
             this.remotePlayerContainer.id = user.uid.toString();
             // this.channelParameters.remoteUid = user.uid.toString();
             this.remotePlayerContainer.textContent =
-              "Remote user " + user.uid.toString();
+              "Host " + user.uid.toString();
             this.HostId = user.uid.toString();
             // Append the remote container to the page body.
             document

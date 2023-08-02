@@ -168,6 +168,7 @@ import AgoraRTC from "agora-rtc-sdk-ng";
 import AgoraRTM from "agora-rtm-sdk";
 import axios from "axios";
 import VuetifyDialog from "@/components/VuetifyDialog.vue";
+import tokenServer from "@/server/token.server";
 // import { flip } from '@popperjs/core';
 const agoraEngine = AgoraRTC.createClient({ mode: "live", codec: "vp9" });
 export default {
@@ -177,6 +178,8 @@ export default {
   data() {
     return {
       text: "",
+      rtcToken:"",
+      rtmToken:"",
       loader: false,
       dialog: false,
       alertText: "",
@@ -328,10 +331,10 @@ export default {
       console.log("staty");
 
       try {
-        const { data } = await this.generateToken(
-          this.options.channel,
-          this.uid
-        );
+        // const { data } = await this.generateToken(
+        //   this.options.channel,
+        //   this.uid
+        // );
         if (this.options.role == "") {
           window.alert("Select a user role first!");
           return;
@@ -360,7 +363,7 @@ export default {
             await agoraEngine.join(
               this.options.appId,
               this.options.channel,
-              data.token,
+              this.rtcToken,
               this.uid
             );
             await this.initRtmInstance();
@@ -431,7 +434,7 @@ export default {
       // Refresh the page for reuse
     },
     async Audience() {
-      const { data } = await this.generateToken(this.options.channel, this.uid);
+      // const { data } = await this.generateToken(this.options.channel, this.uid);
 
       // Listen for the "user-published" event to retrieve a AgoraRTCRemoteUser object
 
@@ -497,7 +500,7 @@ export default {
       await agoraEngine.join(
         this.options.appId,
         this.options.channel,
-        data.token,
+        this.rtcToken,
         this.uid
       );
       this.loader = false;
@@ -537,6 +540,7 @@ export default {
       return true;
     },
     async Login() {
+      await this.generateToken()
       this.loader = true;
       await axios
         .get(`https://livestream-backend-8mme.onrender.com/getStatus`, {
@@ -558,14 +562,14 @@ export default {
       this.rtmClient = AgoraRTM.createInstance(process.env.VUE_APP_APP_ID);
 
       // Generate the RTM token
-      const { data } = await this.generateToken(this.rtmChannelName, this.uid);
-      console.log(data);
+      // const { data } = await this.generateToken(this.rtmChannelName, this.uid);
+      // console.log(data);
 
       // Login when it mounts
       await this.rtmClient
         .login({
           uid: this.uid,
-          token: data.rtm_token,
+          token: this.rtmToken,
         })
         .then(() => {
           console.log("RTM client logged in success ");
@@ -645,15 +649,13 @@ export default {
         // console.log(this);
       });
     },
-    async generateToken(channelName, uid) {
-      return await axios.get(
-        `https://agora-rtm-rtc-tokens.onrender.com/tokens?channelName=${channelName}&uid=${uid}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+    async generateToken() {
+      const data = await tokenServer.generateToken(this.options.channel,this.uid)
+      if(data.data){
+        this.rtcToken=data.data.token
+        this.rtmToken=data.data.rtm_token
+
+      }
     },
     async sendChannelMessage() {
       this.rtmChannelInstance

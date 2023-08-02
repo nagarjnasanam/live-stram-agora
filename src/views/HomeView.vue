@@ -116,7 +116,7 @@
                 <span class="visually-hidden">Loading...</span>
               </div>
             </div>
-            <div v-else>Sign IN</div>
+            <div v-else>Join</div>
           </button>
         </div>
       </div>

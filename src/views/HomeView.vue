@@ -184,7 +184,7 @@
                 {{ options.channel }} Chatroom
               </div>
               <div class="msger-header-options">
-                <span><font-awesome-icon icon="fa-solid fa-cog" /></span>
+                <!-- <span><font-awesome-icon icon="fa-solid fa-cog" /></span> -->
               </div>
             </header>
 
@@ -448,7 +448,9 @@ export default {
               .append(this.localPlayerContainer);
           } else {
             // alert("Host already started");
+            this.loader=false
             this.dialog = true;
+            
             this.alertText =
               "Host already Joined so you can not join as a host";
             this.joinType = "audience";

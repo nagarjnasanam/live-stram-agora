@@ -11,9 +11,9 @@ export default createStore({
     },
   },
   getters: {
-    getState (state) {
-      return state.isLoggedIn
-    }
+    getState(state) {
+      return state.isLoggedIn;
+    },
   },
   mutations: {
     setLogin(state) {
@@ -34,10 +34,9 @@ export default createStore({
     removeLoader(state) {
       state.loader = false;
     },
-    hostStatus(state,data){
-      state.hostStatus=data
-
-    }
+    hostStatus(state, data) {
+      state.hostStatus = data;
+    },
   },
   actions: {
     login({ commit }) {
@@ -58,9 +57,9 @@ export default createStore({
     stopLoader({ commit }) {
       commit("removeLoader");
     },
-    setHostStatus({commit},payload){
-      commit("hostStatus",payload)
-    }
+    setHostStatus({ commit }, payload) {
+      commit("hostStatus", payload);
+    },
   },
   modules: {},
 });

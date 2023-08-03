@@ -24,12 +24,12 @@ export default {
     emits: ['closeDialog'],
     mounted() {
         console.log(this.$props.dialog);
-     
+
     },
     data() {
         return {
-            dialog1:this.$props.dialog,
-            alertText1:this.$props.alertText,
+            dialog1: this.$props.dialog,
+            alertText1: this.$props.alertText,
         };
     },
 };

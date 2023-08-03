@@ -16,10 +16,10 @@ export default {
           id: response.data[0].id,
           flag: response.data[0].flag,
         };
-       Store.dispatch("setHostStatus", data);
+        Store.dispatch("setHostStatus", data);
       }
     } catch (error) {
-        return error
+      return error;
     }
   },
   async addHost() {
@@ -35,9 +35,9 @@ export default {
         id: response.data.id,
         flag: response.data.flag,
       };
-     await Store.dispatch("setHostStatus", data);
+      await Store.dispatch("setHostStatus", data);
     } catch (error) {
-        return error
+      return error;
     }
   },
   async deleteHost() {
@@ -46,9 +46,8 @@ export default {
         `https://livestream-backend-8mme.onrender.com/deleteStatus/${Store.state.hostStatus.id}`
       );
     } catch (error) {
-        return error
+      return error;
     }
   },
   updateHost() {},
 };
-

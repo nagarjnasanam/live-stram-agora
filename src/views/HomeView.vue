@@ -1,70 +1,41 @@
 <template>
   <div class="about">
-    <VuetifyDialog
-      v-if="dialog"
-      :alertText="alertText"
-      :dialog="dialog"
-      @close-dialog="close()"
-    />
-    <LoginComponent
-      :isLoggedIn="$store.state.isLoggedIn"
-      :uid="uid"
-      @login-emit="loginEmit"
-    />
+    <VuetifyDialog v-if="dialog" :alertText="alertText" :dialog="dialog" @close-dialog="close()" />
+    <LoginComponent :isLoggedIn="$store.state.isLoggedIn" :uid="uid" @login-emit="loginEmit" />
     <div class="container-fluid" v-if="$store.state.isLoggedIn">
       <div v-if="!joined">
         <div class="row">
           <div class="text-center mt-5 mb-2">
             <h4 class="display-6">
               {{
-                mongodb.flag
-                  ? "Join as an audience to the Event"
-                  : "Choose your option"
+                $store.state.hostStatus.flag
+                ? "Join as an audience to the Event"
+                : "Choose your option"
               }}
             </h4>
             <!-- <p>{{ mongodb.flag }}</p> -->
           </div>
         </div>
         <div class="row justify-content-md-center">
-          <div class="col col-lg-3 mt-2">
-            <div class="form-check col col-lg-10" v-if="!mongodb.flag">
-              <input
-                class="form-check-input"
-                type="radio"
-                v-model="joinType"
-                value="host"
-                id="host"
-                name="joinAs"
-              />
+          <div class="col col-lg-3 mt-2" v-if="!$store.state.hostStatus.flag">
+            <div class="form-check col col-lg-10">
+              <input class="form-check-input" type="radio" v-model="joinType" value="host" id="host" name="joinAs" />
               <label class="form-check-label" for="flexRadioDefault1">
                 Join as Host
               </label>
             </div>
-            <div class="form-check col col-lg-10" v-if="!mongodb.flag">
-              <input
-                class="form-check-input"
-                type="radio"
-                v-model="joinType"
-                value="audience"
-                id="Audience"
-                name="joinAs"
-                checked
-              />
+            <div class="form-check col col-lg-10">
+              <input class="form-check-input" type="radio" v-model="joinType" value="audience" id="Audience" name="joinAs"
+                checked />
               <label class="form-check-label" for="flexRadioDefault2">
                 Join as Audience
               </label>
             </div>
           </div>
           <div class="col col-lg-10 mt-2 text-center">
-            <button
-              :disabled="loader"
-              @click="Join()"
-              v-if="!joined"
-              type="button"
-              class="btn btn-primary me-2"
-              id="join"
-            >
-             <LoaderComponent :loader="$store.state.loader" text="Join" />
+            <button :disabled="loader" @click="Join()" v-if="!joined" type="button" class="btn btn-primary me-2"
+              id="join">
+              <LoaderComponent :loader="$store.state.loader" text="Join" />
             </button>
           </div>
         </div>
@@ -79,13 +50,7 @@
               {{ uid }}
             </h4>
             <p>Click below button to leave the event</p>
-            <button
-              @click="Leave()"
-              v-if="joined"
-              type="button"
-              class="btn btn-secondary"
-              id="leave"
-            >
+            <button @click="Leave()" v-if="joined" type="button" class="btn btn-secondary" id="leave">
               Leave
             </button>
           </div>
@@ -100,29 +65,19 @@
                 </h1>
               </div>
               <div class="col text-start float-start">
-                <span class="" v-if="this.joinType === 'audience'"
-                  >Host : <span class="fw-bold">{{ this.HostId }}</span></span
-                >
+                <span class="" v-if="this.joinType === 'audience'">Host : <span class="fw-bold">{{ this.HostId
+                }}</span></span>
               </div>
               <div class="col text-end float-end">
                 <div>
-                  <span class="" v-if="this.joinType === 'host'"
-                    >Number of audience count
+                  <span class="" v-if="this.joinType === 'host'">Number of audience count
                     <span class="fw-bold" v-if="this.audienceCount >= 1">{{
                       this.audienceCount - 1
-                    }}</span></span
-                  >
-                  <span class="" v-if="this.joinType === 'audience'"
-                    >Number of audience count
-                    <span class="fw-bold">{{ this.audienceCount }}</span></span
-                  >
-                  <button
-                    @click="handleAudioToggle()"
-                    v-if="this.joinType === 'host'"
-                    type="button"
-                    class="btn btn-info"
-                    id="audioToggle"
-                  >
+                    }}</span></span>
+                  <span class="" v-if="this.joinType === 'audience'">Number of audience count
+                    <span class="fw-bold">{{ this.audienceCount }}</span></span>
+                  <button @click="handleAudioToggle()" v-if="this.joinType === 'host'" type="button" class="btn btn-info"
+                    id="audioToggle">
                     <i v-if="mutedAudio" class="bi bi-mic-mute"></i>
                     <i v-else class="bi bi-mic-fill"></i>
                   </button>
@@ -146,12 +101,9 @@
 
               <main class="msger-chat">
                 <div class="msg left-msg">
-                  <div
-                    class="msg-img"
-                    style="
+                  <div class="msg-img" style="
                       background-image: url(https://www.gravatar.com/avatar/00000000000000000000000000000000?d=retro&f=y);
-                    "
-                  ></div>
+                    "></div>
 
                   <div class="msg-bubble">
                     <div class="msg-info">
@@ -167,17 +119,8 @@
                 </div>
               </main>
 
-              <form
-                class="msger-inputarea"
-                action="javascript:;"
-                @submit="sendChannelMessage()"
-              >
-                <input
-                  type="text"
-                  class="msger-input"
-                  placeholder="Enter your message..."
-                  v-model="text"
-                />
+              <form class="msger-inputarea" action="javascript:;" @submit="sendChannelMessage()">
+                <input type="text" class="msger-input" placeholder="Enter your message..." v-model="text" />
                 <button type="submit" class="msger-send-btn">Send</button>
               </form>
             </section>
@@ -191,10 +134,10 @@
 import LoaderComponent from "@/components/LoaderComponent.vue";
 import AgoraRTC from "agora-rtc-sdk-ng";
 import AgoraRTM from "agora-rtm-sdk";
-import axios from "axios";
 import VuetifyDialog from "@/components/VuetifyDialog.vue";
 import LoginComponent from "@/components/LoginComponent.vue";
 import tokenServer from "@/server/token.server";
+import nodeServer from "@/server/node.server";
 // import { flip } from '@popperjs/core';
 const agoraEngine = AgoraRTC.createClient({ mode: "live", codec: "vp9" });
 export default {
@@ -270,23 +213,7 @@ export default {
     console.log("joinType", this.joinType);
   },
   async mounted() {
-    await axios
-      .get(`https://livestream-backend-8mme.onrender.com/getStatus`, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-      .then((res) => {
-        console.log("HELLLLLLO");
-        var data = res.data[0];
-        console.log(data);
-
-        if (data) {
-          this.mongodb.id = data.id;
-          this.mongodb.flag = data.flag;
-          console.log(res.data[0]);
-        }
-      });
+    await nodeServer.getHostStatus()
 
     await this.startBasicCall();
 
@@ -329,29 +256,8 @@ export default {
     async Join() {
       this.loader = true;
       this.$store.dispatch("startLoader");
-      await axios
-        .get(`https://livestream-backend-8mme.onrender.com/getStatus`, {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        })
-        .then((res) => {
-          console.log(res);
-          var data = res.data[0];
-          if (data) {
-            if (data.flag && this.joinType === "host") {
-              // alert("hhh");
-              this.dialog = true;
-              this.alertText =
-                "Livecast already started!, you can not join as a Host";
-              // alert("Hello")
-              // alert("Livecast already started!, you can not join as a Host");
-            }
-            this.mongodb.id = data.id;
-            this.mongodb.flag = data.flag;
-            console.log(res.data[0]);
-          }
-        });
+      await nodeServer.getHostStatus()
+
 
       if (this.joinType == "audience") {
         await this.Audience();
@@ -361,10 +267,7 @@ export default {
       console.log("staty");
 
       try {
-        // const { data } = await this.generateToken(
-        //   this.options.channel,
-        //   this.uid
-        // );
+
         if (this.options.role == "") {
           window.alert("Select a user role first!");
           return;
@@ -374,18 +277,8 @@ export default {
 
         // Publish the local audio and video track if the user joins as a host.
         if (this.options.role == "host") {
-          // https://livestream-backend-8mme.onrender.com/updateStatus/1
-          if (this.mongodb.flag === false) {
-            axios
-              .post("https://livestream-backend-8mme.onrender.com/register", {
-                flag: true,
-                id: 1,
-              })
-              .then((r) => {
-                console.log(r);
-                this.mongodb.id = r.data.id;
-                this.mongodb.flag = r.data.flag;
-              });
+          if (this.$store.state.hostStatus.flag === false) {
+            await nodeServer.addHost()
             agoraEngine.on("user-unpublished", async (data) => {
               console.log("USER UNPUBLISHED: ", data);
             });
@@ -393,18 +286,18 @@ export default {
 
             try {
               await agoraEngine.join(
-              this.options.appId,
-              this.options.channel,
-              this.rtcToken,
-              this.uid
-            );
-              
+                this.options.appId,
+                this.options.channel,
+                this.rtcToken,
+                this.uid
+              );
+
             } catch (error) {
               console.log(error)
               this.$store.dispatch("stopLoader");
-              
+
             }
-           
+
             await this.initRtmInstance();
             this.loader = false;
 
@@ -439,6 +332,8 @@ export default {
             this.alertText =
               "Host already Joined so you can not join as a host";
             this.joinType = "audience";
+            this.$store.dispatch("stopLoader");
+
           }
         }
       } catch (error) {
@@ -448,14 +343,7 @@ export default {
     async Leave() {
       // Destroy the local audio and video tracks.
       if (this.options.role === "host") {
-        // https://livestream-backend-8mme.onrender.com/deleteStatus/1
-        await axios
-          .delete(
-            `https://livestream-backend-8mme.onrender.com/deleteStatus/${this.mongodb.id}`
-          )
-          .then((res) => {
-            console.log(res);
-          });
+        await nodeServer.deleteHost()
         this.channelParameters.localAudioTrack.removeAllListeners();
         this.channelParameters.localVideoTrack.removeAllListeners();
         agoraEngine.unpublish();
@@ -589,22 +477,9 @@ export default {
     async Login(userId) {
       console.log(userId);
       await this.generateToken();
-      await axios
-        .get(`https://livestream-backend-8mme.onrender.com/getStatus`, {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        })
-        .then((res) => {
-          console.log("HELLLLLLO");
-          var data = res.data[0];
+      await nodeServer.getHostStatus()
+      console.log(this.$store.state.hostStatus)
 
-          if (data) {
-            this.mongodb.id = data.id;
-            this.mongodb.flag = data.flag;
-            console.log(res.data[0]);
-          }
-        });
       // initialize an Agora RTM instance
       this.rtmClient = AgoraRTM.createInstance(process.env.VUE_APP_APP_ID);
 
@@ -625,7 +500,7 @@ export default {
           });
         this.$store.dispatch("login");
         this.$store.dispatch("stopLoader");
-        
+
         this.isLoggedIn = true;
       } catch (error) {
         console.log(error);

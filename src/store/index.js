@@ -4,9 +4,17 @@ export default createStore({
   state: {
     isLoggedIn: false,
     isJoined: false,
-    loader:false
+    loader: false,
+    hostStatus: {
+      id: null,
+      flag: false,
+    },
   },
-  getters: {},
+  getters: {
+    getState (state) {
+      return state.isLoggedIn
+    }
+  },
   mutations: {
     setLogin(state) {
       state.isLoggedIn = true;
@@ -23,28 +31,37 @@ export default createStore({
     setLoader(state) {
       state.loader = true;
     },
-    removeLoader(state){
-      state.loader=false
+    removeLoader(state) {
+      state.loader = false;
+    },
+    hostStatus(state,data){
+      console.log(state,data)
+      state.hostStatus=data
+
     }
   },
   actions: {
     login({ commit }) {
       commit("setLogin");
     },
-    logout({commit}){
-      commit("setlogout")
+    logout({ commit }) {
+      commit("setlogout");
     },
-    joinToChannel({commit}){
-      commit("joined")
+    joinToChannel({ commit }) {
+      commit("joined");
     },
-    leftFromCgannel({commit}){
-      commit("remove")
+    leftFromCgannel({ commit }) {
+      commit("remove");
     },
-    startLoader({commit}){
-      commit("setLoader")
+    startLoader({ commit }) {
+      commit("setLoader");
     },
-    stopLoader({commit}){
-      commit("removeLoader")
+    stopLoader({ commit }) {
+      commit("removeLoader");
+    },
+    setHostStatus({commit},payload){
+      console.log(payload)
+      commit("hostStatus",payload)
     }
   },
   modules: {},

@@ -258,8 +258,6 @@ export default {
 
     await this.startBasicCall();
 
-    console.log(process.env.VUE_APP_APP_ID);
-    console.log(process.env.VUE_APP_CHANNEL);
     this.options.channel = process.env.VUE_APP_CHANNEL;
   },
   methods: {
@@ -269,7 +267,6 @@ export default {
       // alert(this.dialog)
     },
     removeVideoDiv(elementId) {
-      console.log("Removing " + elementId + "Div");
       let Div = document.getElementById(elementId);
       if (Div) {
         Div.remove();
@@ -306,7 +303,7 @@ export default {
           if (this.$store.state.hostStatus.flag === false) {
             await nodeServer.addHost();
             agoraEngine.on("user-unpublished", async (data) => {
-              console.log("USER UNPUBLISHED: ", data);
+              return data
             });
             // Join a channel.
 
@@ -317,9 +314,9 @@ export default {
                 this.rtcToken,
                 this.uid
               );
-            } catch (error) {
-              console.log(error);
+            } catch (error) {      
               this.$store.dispatch("stopLoader");
+              return error
             }
 
             await this.initRtmInstance();
@@ -342,7 +339,6 @@ export default {
             this.channelParameters.localVideoTrack.play(
               this.localPlayerContainer
             );
-            console.log("publish success!");
 
             document
               .getElementById("live-stream-section")
@@ -358,7 +354,8 @@ export default {
           }
         }
       } catch (error) {
-        console.log("ee", error.message);
+        return error
+
       }
     },
     async Leave() {
@@ -378,7 +375,6 @@ export default {
       this.removeVideoDiv(this.localPlayerContainer.id);
       // Leave the channel
 
-      console.log("You left the channel");
       // Refresh the page for reuse
     },
     async Audience() {
@@ -387,7 +383,8 @@ export default {
 
       if (this.$store.state.isLoggedIn) {
         agoraEngine.on("user-unpublished", async (data) => {
-          console.log("USER UNPUBLISHED: ", data);
+          return data
+
         });
         agoraEngine.on("user-published", async (user, mediaType) => {
           this.flag = true;
@@ -395,7 +392,6 @@ export default {
 
           // Subscribe to the remote user when the SDK triggers the "user-published" event.
           await agoraEngine.subscribe(user, mediaType);
-          console.log("subscribe success");
           // Subscribe and play the remote video in the container If the remote user publishes a video track.
           if (mediaType == "video") {
             // Retrieve the remote video track.
@@ -404,8 +400,6 @@ export default {
             this.channelParameters.remoteAudioTrack = user.audioTrack;
             // Save the remote user id for reuse.
             this.channelParameters.remoteUid = user.uid.toString();
-            console.log(user);
-            console.log("rid", this.channelParameters.remoteUid);
             // Specify the ID of the DIV container. You can use the uid of the remote user.
             this.remotePlayerContainer.id = "remotePlayer";
             // this.channelParameters.remoteUid = user.uid.toString();
@@ -433,8 +427,6 @@ export default {
         });
         // Listen for the "user-unpublished" event.
       }
-      console.log("Audience");
-      // console.log()
       this.removeVideoDiv(this.remotePlayerContainer.id);
 
       // Save the selected role in a variable for reuse.
@@ -456,7 +448,6 @@ export default {
       } catch (error) {
         this.$store.dispatch("stopLoader");
         this.joined = false;
-        console.log(error);
         return error;
       }
 
@@ -465,10 +456,10 @@ export default {
     async Host() {
       // Save the selected role in a variable for reuse.
       agoraEngine.on("user-unpublished", async (data) => {
-        console.log("USER UNPUBLISHED: ", data);
+        return data
+
       });
       this.removeVideoDiv(this.options.uid);
-      console.log("selected host");
       this.options.role = "host";
       // Call the method to set the role as Host.
       await agoraEngine.setClientRole(this.options.role);
@@ -489,25 +480,15 @@ export default {
       this.$store.dispatch("startLoader");
 
       this.uid = uid;
-      console.log(uid);
       await this.Login(uid);
     },
     async Login(userId) {
-      console.log(userId);
       await this.generateToken();
       await nodeServer.getHostStatus();
-      console.log(this.$store.state.hostStatus);
-
       // initialize an Agora RTM instance
       this.rtmClient = AgoraRTM.createInstance(process.env.VUE_APP_APP_ID);
-
-      // Generate the RTM token
-      // const { data } = await this.generateToken(this.rtmChannelName, this.uid);
-      // console.log(data);
-
       // Login when it mounts
       try {
-        console.log("try");
         await this.rtmClient
           .login({
             uid: userId,
@@ -519,8 +500,9 @@ export default {
         this.$store.dispatch("login");
         this.$store.dispatch("stopLoader");
       } catch (error) {
-        console.log(error);
         this.$store.dispatch("stopLoader");
+        return error
+
       }
     },
     async initRtmInstance() {
@@ -531,9 +513,7 @@ export default {
      
       // Display connection state changes
       this.rtmClient.on("ConnectionStateChanged", (state, reason) => {
-        console.log("ConnectionStateChanged");
-        console.log("state: ", state);
-        console.log("reason: ", reason);
+        console.log(state, reason);
       });
 
       // Create a channel and listen to messages
@@ -545,9 +525,6 @@ export default {
       this.rtmChannelInstance.join();
 
       this.rtmChannelInstance.on("ChannelMessage", (message, memberId) => {
-        console.log("ChannelMessage");
-        console.log("message: ", message);
-        console.log("memberId: ", memberId);
         this.senderName = memberId;
         this.senderName = this.formatDate(new Date());
         this.botResponse(message.text, memberId);
@@ -555,12 +532,11 @@ export default {
       });
 
       this.rtmChannelInstance.on("MemberJoined", (memberId) => {
-        console.log("MemberJoined",memberId);
+        return memberId
+
       });
 
       this.rtmChannelInstance.on("MemberLeft", (memberId) => {
-        console.log("MemberLeft");
-        console.log("memberId: ", memberId);
         if (memberId === this.HostId) {
           this.dialog = true;
           this.alertText = "Livestream was ended";
@@ -570,9 +546,6 @@ export default {
 
       this.rtmChannelInstance.on("MemberCountUpdated", (data) => {
         this.audienceCount = data;
-        console.log(data);
-        console.log("MemberCountUpdated");
-        // console.log(this);
       });
     },
     async generateToken() {
@@ -588,9 +561,7 @@ export default {
     async sendChannelMessage() {
       this.rtmChannelInstance
         .sendMessage({ text: this.text })
-        .then((res) => {
-          console.log(res);
-          console.log("message sent");
+        .then(() => {
           const PERSON_IMG =
             "https://image.flaticon.com/icons/svg/145/145867.svg";
           const PERSON_NAME = this.uid;
@@ -599,13 +570,13 @@ export default {
           this.text = "";
         })
         .catch((error) => {
-          console.log(error);
+          return error
+
           // Your code for handling the event when the channel message fails to be sent.
         });
     },
     appendMessage(name, img, side, text) {
       var msgerChat = document.querySelector(".msger-chat");
-      console.log(msgerChat);
       const msgHTML = `
     <div class="msg ${side}-msg">
       <div class="msg-img" style="background-image: url(${img})"></div>

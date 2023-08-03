@@ -35,7 +35,6 @@ export default createStore({
       state.loader = false;
     },
     hostStatus(state,data){
-      console.log(state,data)
       state.hostStatus=data
 
     }
@@ -60,7 +59,6 @@ export default createStore({
       commit("removeLoader");
     },
     setHostStatus({commit},payload){
-      console.log(payload)
       commit("hostStatus",payload)
     }
   },

@@ -19,11 +19,10 @@ export default {
        Store.dispatch("setHostStatus", data);
       }
     } catch (error) {
-      console.log(error);
+        return error
     }
   },
   async addHost() {
-    console.log(Store)
     try {
       const response = await axios.post(
         "https://livestream-backend-8mme.onrender.com/register",
@@ -32,15 +31,13 @@ export default {
           id: 1,
         }
       );
-      console.log(response)
       var data = {
         id: response.data.id,
         flag: response.data.flag,
       };
-      console.log(data)
      await Store.dispatch("setHostStatus", data);
     } catch (error) {
-      console.log(error);
+        return error
     }
   },
   async deleteHost() {
@@ -49,20 +46,9 @@ export default {
         `https://livestream-backend-8mme.onrender.com/deleteStatus/${Store.state.hostStatus.id}`
       );
     } catch (error) {
-      console.log(error);
+        return error
     }
   },
   updateHost() {},
 };
 
-// .then((res) => {
-//     console.log("HELLLLLLO");
-//     var data = res.data[0];
-//     console.log(data);
-
-//     if (data) {
-//       this.mongodb.id = data.id;
-//       this.mongodb.flag = data.flag;
-//       console.log(res.data[0]);
-//     }
-//   });

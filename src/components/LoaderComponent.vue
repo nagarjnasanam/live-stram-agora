@@ -17,7 +17,6 @@ export default {
     text: String,
   },
   mounted(){
-    console.log(this.loader,this.text)
   }
 };
 </script>

@@ -1,43 +1,25 @@
 <template>
   <div class="about">
-    <VuetifyDialog v-if="dialog" :alertText="alertText" :dialog="dialog" @close-dialog="close()" />
-    <div class="container-fluid" v-if="!isLoggedIn">
-      <div class="row mt-5">
-        <div class="text-center">
-          <h3 class="display-6">
-            Join Live Event
-            <small class="text-muted">With chat room feature</small>
-          </h3>
-          <h4 class="display-6">Choose your user name</h4>
-        </div>
-      </div>
-      <div class="row justify-content-md-center mt-5">
-        <div class="col col-lg-3">
-          <div class="input-group">
-            <input type="text" class="form-control" v-model="uid" placeholder="Enter Username"
-              aria-label="Enter Username" />
-            <button class="btn btn-outline-secondary" type="button" @click="Login()" :disabled="loader">
-              <div v-if="loader">
-                <div class="spinner-border" role="status">
-                  <span class="visually-hidden">Loading...</span>
-                </div>
-              </div>
-              <div v-else>Sign In</div>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="container-fluid" v-if="isLoggedIn">
+    <VuetifyDialog
+      v-if="dialog"
+      :alertText="alertText"
+      :dialog="dialog"
+      @close-dialog="close()"
+    />
+    <LoginComponent
+      :isLoggedIn="$store.state.isLoggedIn"
+      :uid="uid"
+      @login-emit="loginEmit"
+    />
+    <div class="container-fluid" v-if="$store.state.isLoggedIn">
       <div v-if="!joined">
         <div class="row">
           <div class="text-center mt-5 mb-2">
             <h4 class="display-6">
               {{
                 mongodb.flag
-                ? "Join as an audience to the Event"
-                : "Choose your option"
+                  ? "Join as an audience to the Event"
+                  : "Choose your option"
               }}
             </h4>
             <!-- <p>{{ mongodb.flag }}</p> -->
@@ -46,28 +28,43 @@
         <div class="row justify-content-md-center">
           <div class="col col-lg-3 mt-2">
             <div class="form-check col col-lg-10" v-if="!mongodb.flag">
-              <input class="form-check-input" type="radio" v-model="joinType" value="host" id="host" name="joinAs" />
+              <input
+                class="form-check-input"
+                type="radio"
+                v-model="joinType"
+                value="host"
+                id="host"
+                name="joinAs"
+              />
               <label class="form-check-label" for="flexRadioDefault1">
                 Join as Host
               </label>
             </div>
             <div class="form-check col col-lg-10" v-if="!mongodb.flag">
-              <input class="form-check-input" type="radio" v-model="joinType" value="audience" id="Audience" name="joinAs"
-                checked />
+              <input
+                class="form-check-input"
+                type="radio"
+                v-model="joinType"
+                value="audience"
+                id="Audience"
+                name="joinAs"
+                checked
+              />
               <label class="form-check-label" for="flexRadioDefault2">
                 Join as Audience
               </label>
             </div>
           </div>
           <div class="col col-lg-10 mt-2 text-center">
-            <button :disabled="loader" @click="Join()" v-if="!joined" type="button" class="btn btn-primary me-2"
-              id="join">
-              <div v-if="loader">
-                <div class="spinner-border" role="status">
-                  <span class="visually-hidden">Loading...</span>
-                </div>
-              </div>
-              <div v-else>Join</div>
+            <button
+              :disabled="loader"
+              @click="Join()"
+              v-if="!joined"
+              type="button"
+              class="btn btn-primary me-2"
+              id="join"
+            >
+             <LoaderComponent :loader="$store.state.loader" text="Join" />
             </button>
           </div>
         </div>
@@ -77,11 +74,18 @@
         <div class="row justify-content-md-center mt-5 mb-5">
           <div class="text-center">
             <h4 class="display-6">
-              You Joined as a {{ joinType }} to the {{ options.channel }} Event as
+              You Joined as a {{ joinType }} to the {{ options.channel }} Event
+              as
               {{ uid }}
             </h4>
             <p>Click below button to leave the event</p>
-            <button @click="Leave()" v-if="joined" type="button" class="btn btn-secondary" id="leave">
+            <button
+              @click="Leave()"
+              v-if="joined"
+              type="button"
+              class="btn btn-secondary"
+              id="leave"
+            >
               Leave
             </button>
           </div>
@@ -96,19 +100,29 @@
                 </h1>
               </div>
               <div class="col text-start float-start">
-                <span class="" v-if="this.joinType === 'audience'">Host : <span class="fw-bold">{{ this.HostId
-                }}</span></span>
+                <span class="" v-if="this.joinType === 'audience'"
+                  >Host : <span class="fw-bold">{{ this.HostId }}</span></span
+                >
               </div>
               <div class="col text-end float-end">
                 <div>
-                  <span class="" v-if="this.joinType === 'host'">Number of audience count
+                  <span class="" v-if="this.joinType === 'host'"
+                    >Number of audience count
                     <span class="fw-bold" v-if="this.audienceCount >= 1">{{
                       this.audienceCount - 1
-                    }}</span></span>
-                  <span class="" v-if="this.joinType === 'audience'">Number of audience count
-                    <span class="fw-bold">{{ this.audienceCount }}</span></span>
-                  <button @click="handleAudioToggle()" v-if="this.joinType === 'host'" type="button" class="btn btn-info"
-                    id="audioToggle">
+                    }}</span></span
+                  >
+                  <span class="" v-if="this.joinType === 'audience'"
+                    >Number of audience count
+                    <span class="fw-bold">{{ this.audienceCount }}</span></span
+                  >
+                  <button
+                    @click="handleAudioToggle()"
+                    v-if="this.joinType === 'host'"
+                    type="button"
+                    class="btn btn-info"
+                    id="audioToggle"
+                  >
                     <i v-if="mutedAudio" class="bi bi-mic-mute"></i>
                     <i v-else class="bi bi-mic-fill"></i>
                   </button>
@@ -132,9 +146,12 @@
 
               <main class="msger-chat">
                 <div class="msg left-msg">
-                  <div class="msg-img" style="
-                    background-image: url(https://www.gravatar.com/avatar/00000000000000000000000000000000?d=retro&f=y);
-                  "></div>
+                  <div
+                    class="msg-img"
+                    style="
+                      background-image: url(https://www.gravatar.com/avatar/00000000000000000000000000000000?d=retro&f=y);
+                    "
+                  ></div>
 
                   <div class="msg-bubble">
                     <div class="msg-info">
@@ -150,36 +167,48 @@
                 </div>
               </main>
 
-              <form class="msger-inputarea" action="javascript:;" @submit="sendChannelMessage()">
-                <input type="text" class="msger-input" placeholder="Enter your message..." v-model="text" />
+              <form
+                class="msger-inputarea"
+                action="javascript:;"
+                @submit="sendChannelMessage()"
+              >
+                <input
+                  type="text"
+                  class="msger-input"
+                  placeholder="Enter your message..."
+                  v-model="text"
+                />
                 <button type="submit" class="msger-send-btn">Send</button>
               </form>
             </section>
           </div>
         </div>
-
       </div>
-
     </div>
   </div>
 </template>
 <script>
+import LoaderComponent from "@/components/LoaderComponent.vue";
 import AgoraRTC from "agora-rtc-sdk-ng";
 import AgoraRTM from "agora-rtm-sdk";
 import axios from "axios";
 import VuetifyDialog from "@/components/VuetifyDialog.vue";
+import LoginComponent from "@/components/LoginComponent.vue";
 import tokenServer from "@/server/token.server";
 // import { flip } from '@popperjs/core';
 const agoraEngine = AgoraRTC.createClient({ mode: "live", codec: "vp9" });
 export default {
   components: {
     VuetifyDialog,
+    LoginComponent,
+    LoaderComponent
   },
   data() {
     return {
       text: "",
-      rtcToken:"",
-      rtmToken:"",
+      uppercase: "",
+      rtcToken: "",
+      rtmToken: "",
       loader: false,
       dialog: false,
       alertText: "",
@@ -299,6 +328,7 @@ export default {
     },
     async Join() {
       this.loader = true;
+      this.$store.dispatch("startLoader");
       await axios
         .get(`https://livestream-backend-8mme.onrender.com/getStatus`, {
           headers: {
@@ -360,12 +390,21 @@ export default {
               console.log("USER UNPUBLISHED: ", data);
             });
             // Join a channel.
-            await agoraEngine.join(
+
+            try {
+              await agoraEngine.join(
               this.options.appId,
               this.options.channel,
               this.rtcToken,
               this.uid
             );
+              
+            } catch (error) {
+              console.log(error)
+              this.$store.dispatch("stopLoader");
+              
+            }
+           
             await this.initRtmInstance();
             this.loader = false;
 
@@ -539,9 +578,17 @@ export default {
       }
       return true;
     },
-    async Login() {
-      await this.generateToken()
-      this.loader = true;
+    async loginEmit(uid) {
+      this.$store.dispatch("startLoader");
+
+      this.uid = uid;
+      console.log(uid);
+      this.uppercase = uid;
+      await this.Login(uid);
+    },
+    async Login(userId) {
+      console.log(userId);
+      await this.generateToken();
       await axios
         .get(`https://livestream-backend-8mme.onrender.com/getStatus`, {
           headers: {
@@ -566,17 +613,26 @@ export default {
       // console.log(data);
 
       // Login when it mounts
-      await this.rtmClient
-        .login({
-          uid: this.uid,
-          token: this.rtmToken,
-        })
-        .then(() => {
-          console.log("RTM client logged in success ");
-        });
-      this.loader = false;
+      try {
+        console.log("try");
+        await this.rtmClient
+          .login({
+            uid: userId,
+            token: this.rtmToken,
+          })
+          .then(() => {
+            console.log("RTM client logged in success ");
+          });
+        this.$store.dispatch("login");
+        this.$store.dispatch("stopLoader");
+        
+        this.isLoggedIn = true;
+      } catch (error) {
+        console.log(error);
+        this.$store.dispatch("stopLoader");
 
-      this.isLoggedIn = true;
+        this.loader = false;
+      }
     },
     async initRtmInstance() {
       // RTM Channel to be used
@@ -650,11 +706,13 @@ export default {
       });
     },
     async generateToken() {
-      const data = await tokenServer.generateToken(this.options.channel,this.uid)
-      if(data.data){
-        this.rtcToken=data.data.token
-        this.rtmToken=data.data.rtm_token
-
+      const data = await tokenServer.generateToken(
+        this.options.channel,
+        this.uid
+      );
+      if (data.data) {
+        this.rtcToken = data.data.token;
+        this.rtmToken = data.data.rtm_token;
       }
     },
     async sendChannelMessage() {
